@@ -1,0 +1,24 @@
+:root {
+    --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    --bg-color: #0F172A;
+    --text-color: #E2E8F0;
+    --primary: #8B5CF6;
+    --secondary: #64748B;
+    --accent-wrath: #EF4444;
+    --accent-benevolence: #10B981;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-family);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+button {
+    cursor: pointer;
+}
