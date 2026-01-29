@@ -901,33 +901,45 @@
                 ctx.fillStyle = baseColor;
                 ctx.fill();
 
-                // 2. Persistent Features
+                // 2. Features (with rotation)
+                const rotationRad = (state.visuals.rotationAngle * Math.PI) / 180;
                 state.visuals.features.forEach(f => {
                     ctx.save();
-                    ctx.translate(r + f.x, r + f.y);
-                    if (f.type === 'MOUNTAIN') {
-                        ctx.fillStyle = `rgba(148, 163, 184, ${f.opacity || 0.8})`;
-                        ctx.beginPath();
-                        ctx.moveTo(0, -f.size);
-                        ctx.lineTo(-f.size * 0.8, f.size * 0.5);
-                        ctx.lineTo(f.size * 0.8, f.size * 0.5);
-                        ctx.closePath();
-                        ctx.fill();
-                        // Add shadow to one side of the mountain
-                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                        ctx.beginPath();
-                        ctx.moveTo(0, -f.size);
-                        ctx.lineTo(f.size * 0.8, f.size * 0.5);
-                        ctx.lineTo(0, f.size * 0.5);
-                        ctx.fill();
-                    } else if (f.type === 'CRATER') {
-                        ctx.strokeStyle = `rgba(0, 0, 0, 0.3)`;
-                        ctx.lineWidth = 1.5;
-                        ctx.beginPath();
-                        ctx.arc(0, 0, f.size, 0, Math.PI * 2);
-                        ctx.stroke();
-                        ctx.fillStyle = 'rgba(255,255,255,0.05)';
-                        ctx.fill();
+                    // Apply rotation around Y-axis (horizontal spin)
+                    const cosRot = Math.cos(rotationRad);
+                    const sinRot = Math.sin(rotationRad);
+                    const rotatedX = f.x * cosRot - f.z * sinRot;
+                    const rotatedZ = f.x * sinRot + f.z * cosRot;
+
+                    // Only draw if on visible hemisphere
+                    if (rotatedZ > -r * 0.3) {
+                        const scale = 1 - (rotatedZ / r) * 0.3; // Perspective scaling
+                        ctx.translate(r + rotatedX, r + f.y);
+                        ctx.scale(scale, scale);
+
+                        if (f.type === 'MOUNTAIN') {
+                            ctx.fillStyle = `rgba(148, 163, 184, ${(f.opacity || 0.8) * scale})`;
+                            ctx.beginPath();
+                            ctx.moveTo(0, -f.size);
+                            ctx.lineTo(-f.size * 0.8, f.size * 0.5);
+                            ctx.lineTo(f.size * 0.8, f.size * 0.5);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                            ctx.beginPath();
+                            ctx.moveTo(0, -f.size);
+                            ctx.lineTo(f.size * 0.8, f.size * 0.5);
+                            ctx.lineTo(0, f.size * 0.5);
+                            ctx.fill();
+                        } else if (f.type === 'CRATER') {
+                            ctx.strokeStyle = `rgba(0, 0, 0, ${0.3 * scale})`;
+                            ctx.lineWidth = 1.5;
+                            ctx.beginPath();
+                            ctx.arc(0, 0, f.size, 0, Math.PI * 2);
+                            ctx.stroke();
+                            ctx.fillStyle = `rgba(255,255,255,${0.05 * scale})`;
+                            ctx.fill();
+                        }
                     }
                     ctx.restore();
                 });
