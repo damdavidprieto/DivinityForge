@@ -1,8 +1,8 @@
 import React from 'react';
 import { EraConfig } from '../game/EraDefinitions';
+import Tooltip from './Tooltip';
 
 const ControlPanel = ({ dispatch, power, era, god }) => {
-    // Filter actions: Show if no requirement OR if requirement matches current archetype
     const actions = EraConfig[era].actions.filter(a =>
         !a.requiredArchetype || (god && god.archetype === a.requiredArchetype)
     );
@@ -12,17 +12,22 @@ const ControlPanel = ({ dispatch, power, era, god }) => {
             <h3>Divine Actions</h3>
             <div className="actions-grid">
                 {actions.map(action => (
-                    <button
+                    <Tooltip
                         key={action.id}
-                        disabled={power < action.cost}
-                        onClick={() => dispatch({ type: action.id })}
-                        className={`action-btn ${action.requiredArchetype ? 'archetype-unique' : ''}`}
-                        title={action.description}
+                        title={action.name}
+                        lore={action.lore}
+                        tip={action.tip}
                     >
-                        <strong>{action.name}</strong>
-                        <br />
-                        <small>{action.cost} Power</small>
-                    </button>
+                        <button
+                            disabled={power < action.cost}
+                            onClick={() => dispatch({ type: action.id })}
+                            className={`action-btn ${action.requiredArchetype ? 'archetype-unique' : ''}`}
+                        >
+                            <strong>{action.name}</strong>
+                            <br />
+                            <small>{action.cost} Power</small>
+                        </button>
+                    </Tooltip>
                 ))}
             </div>
         </div>

@@ -9,6 +9,7 @@ import './App.css'
 
 function App() {
     const [gameState, setGameState] = useState(GameEngine.initialState())
+    const [isImpact, setIsImpact] = useState(false);
 
     useEffect(() => {
         const loop = setInterval(() => {
@@ -16,6 +17,12 @@ function App() {
         }, 1000)
         return () => clearInterval(loop)
     }, [])
+
+    const handleAction = (action) => {
+        setGameState(prev => GameEngine.processAction(prev, action));
+        setIsImpact(true);
+        setTimeout(() => setIsImpact(false), 500);
+    };
 
     const currentEra = EraConfig[gameState.era];
 
@@ -29,18 +36,18 @@ function App() {
 
                 <div className="stats-bar">
                     <div className="stat">
-                        <span className="label">Power</span>
+                        <span className="label">Divine Power</span>
                         <span className="value">{Math.floor(gameState.god.power)}</span>
                     </div>
                     {currentEra.nextEraThreshold !== Infinity && (
                         <div className="stat">
-                            <span className="label">Next Era</span>
-                            <span className="value">{Math.floor(gameState.god.power)} / {currentEra.nextEraThreshold}</span>
+                            <span className="label">{currentEra.statLabel}</span>
+                            <span className="value">{Math.floor(gameState.god.evolution)} / {currentEra.nextEraThreshold}</span>
                         </div>
                     )}
                     <div className="stat">
-                        <span className="label">Hostility</span>
-                        <span className="value">{Math.floor(gameState.planet.hostility)}%</span>
+                        <span className="label">World Resonance</span>
+                        <span className="value">{Math.floor(gameState.planet.hostility)}% Hostile</span>
                     </div>
                     {/* Only show Population in Life Era onwards */}
                     {gameState.era !== 'PRIMORDIAL' && (
@@ -49,45 +56,45 @@ function App() {
                             <span className="value">{gameState.planet.population}</span>
                         </div>
                     )}
-                    {/* Show Archetype only when defined */}
-                    {gameState.god.archetype && (
-                        <div className="stat">
-                            <span className="label">Archetype</span>
-                            <span className="value">{gameState.god.archetype}</span>
-                        </div>
-                    )}
                 </div>
             </header>
 
-            <main className="main-view">
-                <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;800&family=Inter:wght@300;400;700&display=swap" rel="stylesheet" />
+            <div className="layout-root">
+                <main className={`main-view ${isImpact ? 'impact-active' : ''}`}>
+                    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;800&family=Inter:wght@300;400;700&display=swap" rel="stylesheet" />
 
-                <div className="era-description">
-                    <p>{currentEra.description}</p>
-                </div>
+                    <div className="era-description">
+                        <p>{currentEra.description}</p>
+                    </div>
 
-                <GodDashboard god={gameState.god} />
-                <PlanetView planet={gameState.planet} />
-                <EventLog events={gameState.events} />
+                    <div className="central-visuals">
+                        <GodDashboard god={gameState.god} />
+                        <PlanetView
+                            planet={gameState.planet}
+                            domainPoints={gameState.god.domainPoints}
+                        />
+                        <EventLog events={gameState.events} />
+                    </div>
 
-                {/* Advance Era Button (Development/Debug or Player Trigger) */}
-                {gameState.god.power >= currentEra.nextEraThreshold && (
-                    <button className="advance-era-btn" onClick={() => setGameState(prev => GameEngine.processAction(prev, { type: 'ADVANCE_ERA' }))}>
-                        Advance to Next Era
-                    </button>
-                )}
-            </main>
+                    {/* Advance Era Button */}
+                    {gameState.god.evolution >= currentEra.nextEraThreshold && (
+                        <button className="advance-era-btn" onClick={() => handleAction({ type: 'ADVANCE_ERA' })}>
+                            Ascend to {gameState.era === 'PRIMORDIAL' ? 'Era of Life' : 'Era of Awakening'}
+                        </button>
+                    )}
+                </main>
 
-            <footer className="controls-area">
-                <ControlPanel
-                    dispatch={(action) => setGameState(prev => GameEngine.processAction(prev, action))}
-                    power={gameState.god.power}
-                    era={gameState.era}
-                    god={gameState.god}
-                />
-            </footer>
+                <aside className="side-controls">
+                    <ControlPanel
+                        dispatch={handleAction}
+                        power={gameState.god.power}
+                        era={gameState.era}
+                        god={gameState.god}
+                    />
+                </aside>
+            </div>
         </div>
-    )
+    );
 }
 
 export default App

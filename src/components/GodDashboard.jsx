@@ -50,10 +50,7 @@ const GodDashboard = ({ god }) => {
                     border: 1px solid var(--glass-border);
                     border-radius: 12px;
                     padding: 1.5rem;
-                    width: 300px;
-                    position: absolute;
-                    left: 2rem;
-                    top: 12rem;
+                    width: 280px;
                     z-index: 10;
                 }
                 

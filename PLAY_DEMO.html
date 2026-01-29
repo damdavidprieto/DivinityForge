@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divinity Forge | Divine Demo</title>
+    <meta name="description" content="Reforge the world as a God. Shape eras, evolve life, and rise to glory.">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;800&family=Inter:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --clr-gold: #d4af37;
+            --clr-white: #f8fafc;
+            --clr-deep: #020617;
+            --clr-glow: #38bdf8;
+            --clr-order: #60a5fa;
+            --clr-chaos: #f472b6;
+            --clr-life: #4ade80;
+            --clr-wrath: #f87171;
+            --clr-knowledge: #fbbf24;
+            --bg-main: #020617;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --font-heading: 'Cinzel', serif;
+            --font-ui: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-main);
+            background-image:
+                radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.05), transparent),
+                radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.05), transparent);
+            color: var(--text-primary);
+            font-family: var(--font-ui);
+            min-height: 100vh;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: var(--font-heading);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-areas:
+                "header header"
+                "main sidebar";
+            grid-template-rows: auto 1fr;
+            grid-template-columns: 1fr 340px;
+            min-height: 100vh;
+            padding: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 1.5rem;
+        }
+
+        .game-header {
+            grid-area: header;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            padding: 1.2rem 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-top h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #fff, var(--clr-gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .era-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--clr-gold);
+            color: var(--clr-gold);
+            padding: 0.4rem 1.2rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: flex-start;
+            gap: 3rem;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .stat .label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        .stat .value {
+            font-size: 1.4rem;
+            font-weight: 300;
+            font-family: var(--font-heading);
+            color: var(--text-primary);
+        }
+
+        .main-view {
+            grid-area: main;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .central-content {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            width: 100%;
+            gap: 2rem;
+            flex: 1;
+            min-height: 0;
+            margin-top: 1rem;
+        }
+
+        .era-description {
+            text-align: center;
+            color: var(--text-secondary);
+            max-width: 700px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Planet Styles */
+        .planet-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        .planet-view {
+            width: clamp(300px, 45vh, 480px);
+            aspect-ratio: 1 / 1;
+            height: auto;
+            border-radius: 50%;
+            position: relative;
+            background: radial-gradient(circle at 30% 30%, #4c1d95, #020617);
+            box-shadow: 0 0 80px rgba(56, 189, 248, 0.2);
+            transition: all 1s ease;
+            overflow: hidden;
+            animation: slowRotate 120s linear infinite;
+        }
+
+        @keyframes slowRotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .aura {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            pointer-events: none;
+            transition: all 1s ease;
+        }
+
+        .atmosphere-glow {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            border-radius: 50%;
+            z-index: 10;
+            pointer-events: none;
+            transition: all 1s ease;
+        }
+
+        .hostility-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(239, 68, 68, 0.2);
+            transition: opacity 1s ease;
+        }
+
+        .civ-lights {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            background-image: radial-gradient(1px 1px at 20% 30%, #fff, transparent);
+            transition: opacity 2s ease;
+        }
+
+        /* Impact Effects */
+        .impact-active .planet-view {
+            animation: impactShake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes impactShake {
+
+            10%,
+            90% {
+                transform: translate3d(-3px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(5px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-8px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(8px, 0, 0);
+            }
+        }
+
+        /* Dashboard Styles */
+        .god-dashboard {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            width: 240px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-self: flex-start;
+        }
+
+        .god-dashboard h3 {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--clr-gold);
+            opacity: 0.8;
+        }
+
+        .archetype-info {
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.8rem;
+        }
+
+        .archetype-info span:first-child {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .archetype-info .value {
+            color: var(--text-primary);
+            font-weight: bold;
+            font-family: var(--font-heading);
+        }
+
+        .domain-track {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .domain-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .progress-bg {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        /* Sidebar Area */
+        .controls-area {
+            grid-area: sidebar;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .controls-area h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: var(--clr-gold);
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+        }
+
+        .actions-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            padding: 1.2rem;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: all 0.25s;
+            text-align: left;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            border-color: var(--clr-gold);
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.02);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .action-btn strong {
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .action-btn small {
+            color: var(--clr-gold);
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Tooltip */
+        .tooltip-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            right: 110%;
+            top: 0;
+            width: 240px;
+            background: rgba(2, 6, 23, 0.98);
+            border: 1px solid var(--clr-gold);
+            border-radius: 8px;
+            padding: 1.2rem;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+            transition: 0.2s;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .tooltip-wrapper:hover .tooltip-content {
+            display: block;
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            color: var(--clr-gold);
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tooltip-lore {
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .tooltip-tip {
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .planet-status-text {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .planet-status-text h3 {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--clr-gold);
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.4rem;
+        }
+
+        .planet-status-text p {
+            font-size: 0.8rem;
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.65rem;
+        }
+
+        .event-log {
+            width: 240px;
+            height: auto;
+            overflow-y: auto;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-self: flex-start;
+        }
+
+        .event-log::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .event-log::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 2px;
+        }
+
+        .event-item {
+            font-size: 0.75rem;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-item.action {
+            color: var(--clr-gold);
+            font-weight: 500;
+        }
+
+        .event-item.era-change {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--clr-gold);
+            padding: 0.8rem;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--clr-gold);
+            font-weight: bold;
+        }
+
+        .advance-era-btn {
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid var(--clr-gold);
+            padding: 1rem 2.5rem;
+            color: var(--clr-gold);
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+        }
+
+        .advance-era-btn:hover {
+            background: var(--clr-gold);
+            color: var(--clr-deep);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
+        }
+    </style>
+</head>
+
+<body class="game-container">
+    <header class="game-header">
+        <div class="header-top">
+            <h1>Divinity Forge</h1>
+            <span class="era-badge" id="era-badge">Primordial Era</span>
+        </div>
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="label">Divine Power</span>
+                <span class="value" id="stat-power">100</span>
+            </div>
+            <div class="stat">
+                <span class="label" id="label-evolution">Entropy</span>
+                <span class="value" id="stat-evolution">0 / 100</span>
+            </div>
+            <div class="stat">
+                <span class="label">World Resonance</span>
+                <span class="value" id="stat-hostility">50% Hostile</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-view" id="game-main">
+        <div class="era-description">
+            <p id="era-desc">The start of time. Shape the molten world through divine will.</p>
+        </div>
+
+        <div class="central-content">
+            <div class="god-dashboard">
+                <h3>God Identity</h3>
+                <div class="archetype-info">
+                    <span>Archetype:</span>
+                    <span class="value" id="god-archetype">None</span>
+                </div>
+                <div id="domain-trackers">
+                    <!-- Domains added by JS -->
+                </div>
+            </div>
+
+            <div class="planet-container">
+                <div class="aura" id="planet-aura"></div>
+                <div class="atmosphere-glow" id="atmosphere-glow"></div>
+
+                <div class="planet-view" id="planet-view">
+                    <div class="hostility-overlay" id="hostility-overlay"></div>
+                    <div class="civ-lights" id="civ-lights"></div>
+                </div>
+
+                <div class="planet-status-text">
+                    <h3>World State</h3>
+                    <p><span class="stat-label">Population</span> <span id="stat-pop">0</span></p>
+                    <p><span class="stat-label">Temperature</span> <span id="stat-temp">100°C</span></p>
+                    <p><span class="stat-label">Hydration</span> <span id="stat-hyd">0%</span></p>
+                </div>
+
+                <div id="era-advance-container"></div>
+            </div>
+
+            <div class="event-log" id="event-log">
+                <!-- Events added by JS -->
+            </div>
+        </div>
+    </main>
+
+    <aside class="controls-area">
+        <h3>Available Powers</h3>
+        <div class="actions-grid" id="actions-grid">
+            <!-- Powers added by JS -->
+        </div>
+    </aside>
+
+    <script>
+        // --- Constants & Data ---
+        const Eras = { PRIMORDIAL: 'PRIMORDIAL', LIFE: 'LIFE', CIVILIZATION: 'CIVILIZATION' };
+
+        const EraConfig = {
+            [Eras.PRIMORDIAL]: {
+                name: "Primordial Era",
+                statLabel: "Entropy",
+                nextEraThreshold: 100,
+                description: "The start of time. Shape the molten world through divine will.",
+                actions: [
+                    { id: 'STABILIZE_CORE', name: "Stabilize Core", cost: 20, lore: "Still the churning depths of the world.", tip: "Reduces Hostility and increases Order. Cools the planet.", domainPoints: { ORDER: 2 }, effects: { hostility: -5, stats: { temperature: -10 } } },
+                    { id: 'VOLCANIC_BURST', name: "Volcanic Burst", cost: 15, lore: "Release the pressure from within.", tip: "High Chaos increase. Drastically increases Temperature.", domainPoints: { CHAOS: 3 }, effects: { stats: { temperature: 25 } } },
+                    { id: 'COMET_IMPACT', name: "Comet Impact", cost: 40, lore: "Ice and stone from the void.", tip: "Increases Hydration and Chaos. High impact!", domainPoints: { CHAOS: 2, LIFE: 2 }, effects: { hydration: 15, hostility: 5 } },
+                    { id: 'COOL_CRUST', name: "Cool Crust", cost: 10, lore: "A solid foundation for what is to come.", tip: "Lowers temperature and stabilizes the world.", domainPoints: { ORDER: 1 }, effects: { stats: { temperature: -20 } } },
+                    { id: 'STIR_ATMOSPHERE', name: "Stir Atmosphere", cost: 15, lore: "Breathless air begins to move.", tip: "Changes atmosphere to 'void-gas'. Lowers hostility.", effects: { atmosphere: "thin-air", hostility: -2 } },
+                    { id: 'IGNITE_MANTLE', name: "Ignite Mantle", cost: 25, lore: "Let the world burn bright.", tip: "Increases heat and wrath.", domainPoints: { WRATH: 2 }, effects: { stats: { temperature: 30 } } }
+                ]
+            },
+            [Eras.LIFE]: {
+                name: "Era of Life",
+                statLabel: "Complexity",
+                nextEraThreshold: 500,
+                description: "Organic matter finds a way. Nurture the first breaths.",
+                actions: [
+                    { id: 'FORM_OCEANS', name: "Form Oceans", cost: 30, lore: "Water is the cradle of life.", tip: "Massive Hydration boost. Cools the world.", domainPoints: { LIFE: 2 }, effects: { hydration: 40, stats: { temperature: -10 } } },
+                    { id: 'EVOLVE_FLORA', name: "Evolve Flora", cost: 25, lore: "Green spreads across the stone.", tip: "Boosts Life points and Oxygenates atmosphere.", domainPoints: { LIFE: 3 }, effects: { population: 100, atmosphere: "rich-oxygen" } },
+                    { id: 'PRIMORDIAL_SOUP', name: "Primordial Soup", cost: 40, lore: "Stir the chemical dance.", tip: "High Life and Chaos yield. Sparks early population.", domainPoints: { LIFE: 4, CHAOS: 1 }, effects: { population: 200 } },
+                    { id: 'CLIMATE_SHIFT', name: "Climate Shift", cost: 30, lore: "Change the winds of fate.", tip: "Balance temperature and hydration.", effects: { stats: { temperature: -5, hydration: 5 } } },
+                    { id: 'NATURAL_SELECTION', name: "Natural Selection", cost: 50, lore: "The strong survive.", tip: "High Chaos. Increases Evolution speed.", domainPoints: { CHAOS: 3 }, effects: { power: 50 } }
+                ]
+            },
+            [Eras.CIVILIZATION]: {
+                name: "Era of Awakening",
+                statLabel: "Faith",
+                nextEraThreshold: Infinity,
+                description: "Mind over matter. Guide your followers to greatness.",
+                actions: [
+                    { id: 'DIVINE_ORACLE', name: "Divine Oracle", cost: 100, lore: "Speak to their hearts.", tip: "Massive Faith boost. Improves civilization efficiency.", domainPoints: { KNOWLEDGE: 3 }, effects: { population: 1000 } },
+                    { id: 'HOLY_WAR', name: "Holy War", cost: 200, lore: "Cleanse the unbelievers.", tip: "High Wrath. Reduces population but spikes Faith.", domainPoints: { WRATH: 5 }, effects: { population: -2000, power: 500 } }
+                ]
+            }
+        };
+
+        const Archetypes = {
+            FERTILITY: { name: "The Great Mother", color: "#4ade80" },
+            WARMONGER: { name: "Lord of Iron", color: "#f87171" },
+            BUILDER: { name: "The Architect", color: "#60a5fa" },
+            TRICKSTER: { name: "The Weaver", color: "#f472b6" },
+            KNOWLEDGE: { name: "The All-Seer", color: "#fbbf24" },
+            NEUTRAL: { name: "The Watcher", color: "#94a3b8" }
+        };
+
+        // --- State ---
+        let state = {
+            god: { power: 100, evolution: 0, archetype: null, domainPoints: { ORDER: 0, CHAOS: 0, LIFE: 0, WRATH: 0, KNOWLEDGE: 0 } },
+            planet: { population: 0, hostility: 50, atmosphere: "void", stats: { temperature: 100, hydration: 0 } },
+            era: Eras.PRIMORDIAL,
+            events: []
+        };
+
+        // --- Core Logic ---
+        function tick() {
+            let powerGain = state.god.archetype ? 10.0 : 5.0;
+            let evolutionGain = (state.era === Eras.PRIMORDIAL) ? 1.0 : 1.0 + (state.planet.population / 1500);
+            let popChange = 0;
+            let newHostility = state.planet.hostility;
+
+            if (Math.random() < 0.05 && state.planet.hostility > 70) {
+                logEvent("A storm rages through the atmosphere.", "wrath");
+                newHostility += 2;
+                evolutionGain += 5;
+            }
+
+            if (state.era !== Eras.PRIMORDIAL) {
+                const s = state.planet.stats;
+                if (s.temperature > 10 && s.temperature < 90 && s.hydration > 10) {
+                    popChange = Math.max(1, Math.floor(state.planet.population * 0.01) + (state.god.domainPoints.LIFE * 5));
+                } else if (state.planet.population > 0) {
+                    popChange = -Math.ceil(state.planet.population * 0.05);
+                }
+                newHostility = Math.max(0, state.planet.hostility - 0.05);
+            }
+
+            state.god.power = Math.min(10000, state.god.power + powerGain);
+            state.god.evolution += evolutionGain;
+            state.planet.population = Math.max(0, state.planet.population + popChange);
+            state.planet.hostility = Math.min(100, Math.max(0, newHostility));
+            render();
+        }
+
+        function processAction(actionType) {
+            if (actionType === 'ADVANCE_ERA') {
+                triggerImpact();
+                state.god.evolution = 0;
+                if (state.era === Eras.PRIMORDIAL) {
+                    state.era = Eras.LIFE;
+                    logEvent("The Primordial Chaos settles. Life begins to stir.", "era-change");
+                } else if (state.era === Eras.LIFE) {
+                    state.era = Eras.CIVILIZATION;
+                    state.god.archetype = determineArchetype();
+                    logEvent(`Civilization rises! You are ${Archetypes[state.god.archetype].name}.`, "era-change");
+                }
+                render();
+                return;
+            }
+
+            const config = EraConfig[state.era];
+            const action = config.actions.find(a => a.id === actionType);
+
+            if (action && state.god.power >= action.cost) {
+                state.god.power -= action.cost;
+                state.god.evolution += action.cost * 1.5;
+
+                if (action.domainPoints) {
+                    for (const [d, p] of Object.entries(action.domainPoints)) state.god.domainPoints[d] += p;
+                }
+                if (action.effects) {
+                    const e = action.effects;
+                    if (e.atmosphere) state.planet.atmosphere = e.atmosphere;
+                    if (e.hostility) state.planet.hostility += e.hostility;
+                    if (e.population) state.planet.population += e.population;
+                    if (e.hydration) state.planet.stats.hydration += e.hydration;
+                    if (e.stats && e.stats.temperature) state.planet.stats.temperature += e.stats.temperature; // Corrected access
+                    if (e.power) state.god.power += e.power; // Corrected from powerGain
+                }
+                logEvent(`You use ${action.name}.`, "action");
+                triggerImpact();
+                render();
+            }
+        }
+
+        function determineArchetype() {
+            let maxVal = -1; let maxDomain = 'NEUTRAL';
+            for (let d in state.god.domainPoints) {
+                if (state.god.domainPoints[d] > maxVal) { maxVal = state.god.domainPoints[d]; maxDomain = d; }
+            }
+            const map = { ORDER: 'BUILDER', CHAOS: 'TRICKSTER', WRATH: 'WARMONGER', LIFE: 'FERTILITY', KNOWLEDGE: 'KNOWLEDGE' };
+            return map[maxDomain] || 'NEUTRAL';
+        }
+
+        function triggerImpact() {
+            const main = document.getElementById('game-main'); // Changed from 'main-view' to 'game-main'
+            main.classList.add('impact-active');
+            setTimeout(() => main.classList.remove('impact-active'), 500);
+        }
+
+        function logEvent(text, type) {
+            state.events.unshift({ text, type });
+            if (state.events.length > 8) state.events.pop();
+        }
+
+        // --- Rendering ---
+        function render() {
+            const eraData = EraConfig[state.era];
+
+            // Header & Stats
+            document.getElementById('era-badge').textContent = eraData.name; // Changed from 'era-name' to 'era-badge'
+            document.getElementById('label-evolution').textContent = eraData.statLabel; // Changed from 'evolution-label' to 'label-evolution'
+            document.getElementById('era-desc').textContent = eraData.description;
+            document.getElementById('stat-power').textContent = Math.floor(state.god.power);
+            document.getElementById('stat-evolution').textContent = `${Math.floor(state.god.evolution)} / ${eraData.nextEraThreshold === Infinity ? '∞' : eraData.nextEraThreshold}`;
+            document.getElementById('stat-hostility').textContent = Math.floor(state.planet.hostility) + "% Hostile";
+
+            // Planet State
+            document.getElementById('stat-pop').textContent = Math.floor(state.planet.population).toLocaleString();
+            document.getElementById('stat-temp').textContent = state.planet.stats.temperature + "°C";
+            document.getElementById('stat-hyd').textContent = state.planet.stats.hydration + "%";
+
+            // Dashboard
+            document.getElementById('god-archetype').textContent = state.god.archetype ? Archetypes[state.god.archetype].name : 'Ascending Essence';
+            const dtrackers = document.getElementById('domain-trackers');
+            dtrackers.innerHTML = '';
+            ['ORDER', 'CHAOS', 'LIFE', 'WRATH'].forEach(d => {
+                const pts = state.god.domainPoints[d];
+                const pct = Math.min(100, (pts / 30) * 100);
+                const color = `var(--clr-${d.toLowerCase()})`;
+                dtrackers.innerHTML += `
+                    <div class="domain-track">
+                        <div class="domain-header"><span>${d}</span><span>${pts}</span></div>
+                        <div class="progress-bg"><div class="progress-fill" style="width: ${pct}%; background-color: ${color}; box-shadow: 0 0 10px ${color}44"></div></div>
+                    </div>`;
+            });
+
+            // Visual Layers
+            const s = state.planet.stats;
+            const surface = s.hydration > 25 ? (state.planet.population > 500 ? '#166534' : '#1e40af') : '#4c1d95';
+            document.getElementById('planet-view').style.background = `radial-gradient(circle at 30% 30%, ${surface}, #020617)`;
+            document.getElementById('hostility-overlay').style.opacity = state.planet.hostility / 150;
+            document.getElementById('civ-lights').style.opacity = state.planet.population > 1000 ? 0.8 : 0;
+
+            // Atmosphere
+            const atmoGlow = document.getElementById('atmosphere-glow');
+            if (state.planet.atmosphere === 'rich-oxygen') {
+                atmoGlow.style.boxShadow = 'inset 0 0 50px rgba(56, 189, 248, 0.3), 0 0 30px rgba(56, 189, 248, 0.2)';
+            } else if (state.planet.stats.temperature > 150) {
+                atmoGlow.style.boxShadow = 'inset 0 0 50px rgba(248, 113, 113, 0.3), 0 0 30px rgba(248, 113, 113, 0.2)';
+            } else {
+                atmoGlow.style.boxShadow = 'none'; // Clear if neither condition met
+            }
+
+            // Advance Era Button
+            const advContainer = document.getElementById('era-advance-container');
+            if (state.god.evolution >= eraData.nextEraThreshold) {
+                if (!advContainer.innerHTML) {
+                    advContainer.innerHTML = `<button class="advance-era-btn" onclick="processAction('ADVANCE_ERA')">Ascend to ${state.era === Eras.PRIMORDIAL ? 'Era of Life' : 'Era of Awakening'}</button>`;
+                }
+            } else {
+                advContainer.innerHTML = '';
+            }
+
+            // Actions Grid
+            const grid = document.getElementById('actions-grid');
+            grid.innerHTML = '';
+            eraData.actions.forEach(a => {
+                const wrap = document.createElement('div');
+                wrap.className = 'tooltip-wrapper';
+                const canAfford = state.god.power >= a.cost;
+
+                wrap.innerHTML = `
+                    <button class="action-btn" ${canAfford ? '' : 'disabled'} onclick="processAction('${a.id}')">
+                        <strong>${a.name}</strong>
+                        <small>${a.cost} Power</small>
+                    </button>
+                    <div class="tooltip-content">
+                        <div class="tooltip-title">${a.name}</div>
+                        <div class="tooltip-lore">"${a.lore}"</div>
+                        <div class="tooltip-divider"></div>
+                        <div class="tooltip-tip">${a.tip}</div>
+                    </div>
+                `;
+                grid.appendChild(wrap);
+            });
+
+            // Event Log
+            document.getElementById('event-log').innerHTML = state.events.map(e => `
+                <div class="event-item ${e.type}">${e.text}</div>
+            `).join('');
+        }
+
+        // --- Init ---
+        setInterval(tick, 1000);
+        render();
+    </script>
+</body>
+
+</html>
