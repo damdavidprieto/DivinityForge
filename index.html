@@ -473,11 +473,30 @@
             margin: 0.6rem 0;
         }
 
+        .tooltip-effects {
+            margin-bottom: 0.8rem;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .effect-item {
+            display: flex;
+            justify-content: space-between;
+            color: var(--clr-life);
+        }
+
+        .effect-item.negative {
+            color: var(--clr-wrath);
+        }
+
         .tooltip-tip {
             color: white;
             font-size: 0.75rem;
             line-height: 1.3;
             font-weight: 500;
+            opacity: 0.8;
         }
 
         .planet-status-text {
@@ -810,13 +829,30 @@
         // --- Tooltip Logic ---
         function showTooltip(e, id) {
             const eraData = EraConfig[state.era];
-            const action = eraData.actions.find(a => a.id === id) || (id === 'ADVANCE_ERA' ? { name: "Ascension", lore: "Ascend to the next stage of divinity.", tip: "Requires maximum Entropy." } : null);
+            const action = eraData.actions.find(a => a.id === id) || (id === 'ADVANCE_ERA' ? { name: "Ascension", lore: "Ascend to the next stage of divinity.", tip: "Requires maximum Entropy.", effects: {} } : null);
             if (!action) return;
+
+            let effectsHtml = '';
+            if (action.effects) {
+                effectsHtml = '<div class="tooltip-effects">';
+                for (const [key, val] of Object.entries(action.effects)) {
+                    if (key === 'stats' && val.temperature) {
+                        effectsHtml += `<div class="effect-item ${val.temperature < 0 ? '' : 'negative'}"><span>Temperature:</span> <span>${val.temperature > 0 ? '+' : ''}${val.temperature}°C</span></div>`;
+                    } else if (typeof val === 'number') {
+                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        effectsHtml += `<div class="effect-item ${val > 0 ? '' : 'negative'}"><span>${label}:</span> <span>${val > 0 ? '+' : ''}${val}${key === 'hydration' || key === 'hostility' ? '%' : ''}</span></div>`;
+                    } else if (typeof val === 'string') {
+                        effectsHtml += `<div class="effect-item"><span>${key.charAt(0).toUpperCase() + key.slice(1)}:</span> <span>${val}</span></div>`;
+                    }
+                }
+                effectsHtml += '</div>';
+            }
 
             const tooltip = document.getElementById('global-tooltip');
             tooltip.innerHTML = `
                 <div class="tooltip-title">${action.name}</div>
                 <div class="tooltip-lore">"${action.lore}"</div>
+                ${effectsHtml}
                 <div class="tooltip-divider"></div>
                 <div class="tooltip-tip">${action.tip}</div>
             `;
