@@ -745,7 +745,8 @@
             planet: { population: 0, hostility: 50, atmosphere: "void", stats: { temperature: 100, hydration: 0 } },
             visuals: {
                 features: [],
-                lastImpact: 0
+                lastImpact: 0,
+                rotationAngle: 0
             },
             era: Eras.PRIMORDIAL,
             events: []
@@ -778,6 +779,7 @@
             state.god.evolution += evolutionGain;
             state.planet.population = Math.max(0, state.planet.population + popChange);
             state.planet.hostility = Math.min(100, Math.max(0, newHostility));
+            state.visuals.rotationAngle = (state.visuals.rotationAngle + 0.5) % 360;
             render();
             PlanetRenderer.draw();
         }
@@ -936,10 +938,12 @@
                 const r = this.ctx.canvas.width / 2;
                 const angle = Math.random() * Math.PI * 2;
                 const dist = Math.random() * (r * 0.8);
+                const latitude = (Math.random() - 0.5) * Math.PI;
                 state.visuals.features.push({
                     type,
                     x: Math.cos(angle) * dist,
-                    y: Math.sin(angle) * dist,
+                    y: Math.sin(latitude) * dist * 0.5,
+                    z: Math.sin(angle) * dist,
                     size: size + Math.random() * 10,
                     opacity: 0.6 + Math.random() * 0.4
                 });

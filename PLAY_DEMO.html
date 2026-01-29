@@ -755,7 +755,8 @@
             planet: { population: 0, hostility: 50, atmosphere: "void", stats: { temperature: 100, hydration: 0 } },
             visuals: {
                 features: [], // List of mountains, craters, cities
-                lastImpact: 0
+                lastImpact: 0,
+                rotationAngle: 0 // Degrees of rotation
             },
             era: Eras.PRIMORDIAL,
             events: []
@@ -788,6 +789,7 @@
             state.god.evolution += evolutionGain;
             state.planet.population = Math.max(0, state.planet.population + popChange);
             state.planet.hostility = Math.min(100, Math.max(0, newHostility));
+            state.visuals.rotationAngle = (state.visuals.rotationAngle + 0.5) % 360; // Slow rotation
             render();
         }
 
