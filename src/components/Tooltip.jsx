@@ -32,7 +32,7 @@ const Tooltip = ({ title, lore, tip, children }) => {
                     border: 1px solid var(--clr-gold);
                     border-radius: 8px;
                     padding: 1rem;
-                    z-index: 100;
+                    z-index: 1000000000;
                     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
                     pointer-events: none;
                     animation: fadeIn 0.2s ease-out;
