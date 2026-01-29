@@ -181,16 +181,28 @@
         }
 
         .planet-view {
-            width: clamp(300px, 45vh, 480px);
-            aspect-ratio: 1 / 1;
-            height: auto;
+            grid-area: main;
+            width: clamp(300px, 60vh, 800px);
+            aspect-ratio: 1;
+            margin: auto;
             border-radius: 50%;
             position: relative;
-            background: radial-gradient(circle at 30% 30%, #4c1d95, #020617);
-            box-shadow: 0 0 80px rgba(56, 189, 248, 0.2);
-            transition: all 1s ease;
+            box-shadow:
+                0 0 100px rgba(56, 189, 248, 0.15),
+                inset -40px -40px 80px rgba(0, 0, 0, 0.9);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            animation: slowRotate 120s linear infinite;
+            background: #020617;
+        }
+
+        #planet-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
         }
 
         @keyframes slowRotate {
@@ -647,6 +659,7 @@
                 <div class="atmosphere-glow" id="atmosphere-glow"></div>
 
                 <div class="planet-view" id="planet-view">
+                    <canvas id="planet-canvas"></canvas>
                     <div class="hostility-overlay" id="hostility-overlay"></div>
                     <div class="civ-lights" id="civ-lights"></div>
                 </div>
@@ -680,57 +693,60 @@
 
         const EraConfig = {
             [Eras.PRIMORDIAL]: {
-                name: "Primordial Era",
-                statLabel: "Entropy",
+                name: "Era Primordial",
+                statLabel: "Entropía",
                 nextEraThreshold: 100,
-                description: "The start of time. Shape the molten world through divine will.",
+                description: "El inicio del tiempo. Forja el mundo fundido mediante la voluntad divina.",
                 actions: [
-                    { id: 'STABILIZE_CORE', name: "Stabilize Core", cost: 20, lore: "Still the churning depths of the world.", tip: "Reduces Hostility and increases Order. Cools the planet.", domainPoints: { ORDER: 2 }, effects: { hostility: -5, stats: { temperature: -10 } } },
-                    { id: 'VOLCANIC_BURST', name: "Volcanic Burst", cost: 15, lore: "Release the pressure from within.", tip: "High Chaos increase. Drastically increases Temperature.", domainPoints: { CHAOS: 3 }, effects: { stats: { temperature: 25 } } },
-                    { id: 'COMET_IMPACT', name: "Comet Impact", cost: 40, lore: "Ice and stone from the void.", tip: "Increases Hydration and Chaos. High impact!", domainPoints: { CHAOS: 2, LIFE: 2 }, effects: { hydration: 15, hostility: 5 } },
-                    { id: 'COOL_CRUST', name: "Cool Crust", cost: 10, lore: "A solid foundation for what is to come.", tip: "Lowers temperature and stabilizes the world.", domainPoints: { ORDER: 1 }, effects: { stats: { temperature: -20 } } },
-                    { id: 'STIR_ATMOSPHERE', name: "Stir Atmosphere", cost: 15, lore: "Breathless air begins to move.", tip: "Changes atmosphere to 'void-gas'. Lowers hostility.", effects: { atmosphere: "thin-air", hostility: -2 } },
-                    { id: 'IGNITE_MANTLE', name: "Ignite Mantle", cost: 25, lore: "Let the world burn bright.", tip: "Increases heat and wrath.", domainPoints: { WRATH: 2 }, effects: { stats: { temperature: 30 } } }
+                    { id: 'STABILIZE_CORE', name: "Estabilizar Núcleo", cost: 20, lore: "Calma las profundidades agitadas del mundo.", tip: "Reduce Hostilidad y aumenta el Orden.", effects: { hostility: -5, stats: { temperature: -10 }, domainPoints: { ORDER: 1 } }, visualType: 'CORE' },
+                    { id: 'ALZAR_MONTANAS', name: "Alzar Montañas", cost: 30, lore: "Picos que tocan el cielo primordial.", tip: "Crea terreno firme y aumenta la defensa planetaria.", effects: { hostility: -5, domainPoints: { ORDER: 1 } }, visualType: 'GEOLOGY' },
+                    { id: 'COMET_IMPACT', name: "Impacto de Cometa", cost: 40, lore: "Hielo y piedra desde el vacío.", tip: "Aumenta Hidratación drásticamente.", effects: { hydration: 15, hostility: 5, domainPoints: { CHAOS: 1 } }, visualType: 'IMPACT' },
+                    { id: 'COOL_CRUST', name: "Enfriar Corteza", cost: 10, lore: "Una base sólida para lo que vendrá.", tip: "Baja la temperatura y estabiliza el mundo.", effects: { stats: { temperature: -20 }, domainPoints: { ORDER: 1 } }, visualType: 'COOLING' },
+                    { id: 'STIR_ATMOSPHERE', name: "Agitar Atmósfera", cost: 15, lore: "Gases en danza eterna.", tip: "Equilibra el calor y genera vientos.", effects: { atmosphere: "thin-air", hostility: -2, domainPoints: { CHAOS: 1 } }, visualType: 'ATMOSPHERE' },
+                    { id: 'VOLCANIC_BURST', name: "Estallido Volcánico", cost: 15, lore: "El fuego interno reclama su lugar.", tip: "Sube temperatura y libera minerales.", effects: { stats: { temperature: 25 }, domainPoints: { WRATH: 1 } }, visualType: 'VOLCANIC' }
                 ]
             },
             [Eras.LIFE]: {
-                name: "Era of Life",
-                statLabel: "Complexity",
+                name: "Era de la Vida",
+                statLabel: "Complejidad",
                 nextEraThreshold: 500,
-                description: "Organic matter finds a way. Nurture the first breaths.",
+                description: "La materia orgánica encuentra su camino. Nutre los primeros alientos.",
                 actions: [
-                    { id: 'FORM_OCEANS', name: "Form Oceans", cost: 30, lore: "Water is the cradle of life.", tip: "Massive Hydration boost. Cools the world.", domainPoints: { LIFE: 2 }, effects: { hydration: 40, stats: { temperature: -10 } } },
-                    { id: 'EVOLVE_FLORA', name: "Evolve Flora", cost: 25, lore: "Green spreads across the stone.", tip: "Boosts Life points and Oxygenates atmosphere.", domainPoints: { LIFE: 3 }, effects: { population: 100, atmosphere: "rich-oxygen" } },
-                    { id: 'PRIMORDIAL_SOUP', name: "Primordial Soup", cost: 40, lore: "Stir the chemical dance.", tip: "High Life and Chaos yield. Sparks early population.", domainPoints: { LIFE: 4, CHAOS: 1 }, effects: { population: 200 } },
-                    { id: 'CLIMATE_SHIFT', name: "Climate Shift", cost: 30, lore: "Change the winds of fate.", tip: "Balance temperature and hydration.", effects: { stats: { temperature: -5, hydration: 5 } } },
-                    { id: 'NATURAL_SELECTION', name: "Natural Selection", cost: 50, lore: "The strong survive.", tip: "High Chaos. Increases Evolution speed.", domainPoints: { CHAOS: 3 }, effects: { power: 50 } }
+                    { id: 'FORM_OCEANS', name: "Formar Océanos", cost: 30, lore: "El agua es la cuna de la vida.", tip: "Impulso masivo de Hidratación.", effects: { hydration: 40, stats: { temperature: -10 }, domainPoints: { LIFE: 2 } }, visualType: 'HYDRO' },
+                    { id: 'EVOLVE_FLORA', name: "Evolucionar Flora", cost: 25, lore: "El verde se extiende sobre la roca.", tip: "Oxigena la atmósfera.", effects: { population: 100, atmosphere: "rich-oxygen", domainPoints: { LIFE: 1 } }, visualType: 'LIFE' },
+                    { id: 'PRIMORDIAL_SOUP', name: "Sopa Primordial", cost: 40, lore: "Agita la danza química.", tip: "Inicia la población temprana.", effects: { population: 200, domainPoints: { LIFE: 2, KNOWLEDGE: 1 } }, visualType: 'LIFE' },
+                    { id: 'CLIMATE_SHIFT', name: "Cambio Climático", cost: 30, lore: "Cambia los vientos del destino.", tip: "Equilibra temperatura e hidratación.", effects: { stats: { temperature: -5, hydration: 5 }, domainPoints: { ORDER: 1, CHAOS: 1 } }, visualType: 'ATMOSPHERE' }
                 ]
             },
             [Eras.CIVILIZATION]: {
-                name: "Era of Awakening",
-                statLabel: "Faith",
+                name: "Era del Despertar",
+                statLabel: "Fe",
                 nextEraThreshold: Infinity,
-                description: "Mind over matter. Guide your followers to greatness.",
+                description: "Mente sobre materia. Guía a tus seguidores hacia la grandeza.",
                 actions: [
-                    { id: 'DIVINE_ORACLE', name: "Divine Oracle", cost: 100, lore: "Speak to their hearts.", tip: "Massive Faith boost. Improves civilization efficiency.", domainPoints: { KNOWLEDGE: 3 }, effects: { population: 1000 } },
-                    { id: 'HOLY_WAR', name: "Holy War", cost: 200, lore: "Cleanse the unbelievers.", tip: "High Wrath. Reduces population but spikes Faith.", domainPoints: { WRATH: 5 }, effects: { population: -2000, power: 500 } }
+                    { id: 'DIVINE_ORACLE', name: "Oráculo Divino", cost: 100, lore: "Habla a sus corazones.", tip: "Mejora la eficiencia de la civilización.", effects: { population: 1000, domainPoints: { KNOWLEDGE: 3 } }, visualType: 'SPIRAL' },
+                    { id: 'HOLY_WAR', name: "Guerra Santa", cost: 200, lore: "Purifica a los infieles.", tip: "Reduce población pero dispara la Fe.", effects: { population: -2000, power: 500, domainPoints: { WRATH: 5 } }, visualType: 'WRATH' }
                 ]
             }
         };
 
         const Archetypes = {
-            FERTILITY: { name: "The Great Mother", color: "#4ade80" },
-            WARMONGER: { name: "Lord of Iron", color: "#f87171" },
-            BUILDER: { name: "The Architect", color: "#60a5fa" },
-            TRICKSTER: { name: "The Weaver", color: "#f472b6" },
-            KNOWLEDGE: { name: "The All-Seer", color: "#fbbf24" },
-            NEUTRAL: { name: "The Watcher", color: "#94a3b8" }
+            FERTILITY: { name: "La Gran Madre", color: "#4ade80" },
+            WARMONGER: { name: "Señor del Hierro", color: "#f87171" },
+            BUILDER: { name: "El Arquitecto", color: "#60a5fa" },
+            TRICKSTER: { name: "El Tejedor", color: "#f472b6" },
+            KNOWLEDGE: { name: "El Omnisciente", color: "#fbbf24" },
+            NEUTRAL: { name: "El Observador", color: "#94a3b8" }
         };
 
         // --- State ---
         let state = {
             god: { power: 100, evolution: 0, archetype: null, domainPoints: { ORDER: 0, CHAOS: 0, LIFE: 0, WRATH: 0, KNOWLEDGE: 0 } },
             planet: { population: 0, hostility: 50, atmosphere: "void", stats: { temperature: 100, hydration: 0 } },
+            visuals: {
+                features: [],
+                lastImpact: 0
+            },
             era: Eras.PRIMORDIAL,
             events: []
         };
@@ -743,7 +759,7 @@
             let newHostility = state.planet.hostility;
 
             if (Math.random() < 0.05 && state.planet.hostility > 70) {
-                logEvent("A storm rages through the atmosphere.", "wrath");
+                logEvent("Una tormenta ruge en la atmósfera.", "wrath");
                 newHostility += 2;
                 evolutionGain += 5;
             }
@@ -763,6 +779,7 @@
             state.planet.population = Math.max(0, state.planet.population + popChange);
             state.planet.hostility = Math.min(100, Math.max(0, newHostility));
             render();
+            PlanetRenderer.draw();
         }
 
         function processAction(actionType) {
@@ -771,38 +788,56 @@
                 state.god.evolution = 0;
                 if (state.era === Eras.PRIMORDIAL) {
                     state.era = Eras.LIFE;
-                    logEvent("The Primordial Chaos settles. Life begins to stir.", "era-change");
+                    logEvent("El Caos Primordial se asienta. La vida comienza a agitarse.", "era-change");
                 } else if (state.era === Eras.LIFE) {
                     state.era = Eras.CIVILIZATION;
                     state.god.archetype = determineArchetype();
-                    logEvent(`Civilization rises! You are ${Archetypes[state.god.archetype].name}.`, "era-change");
+                    logEvent(`¡Surge la Civilización! Eres ${Archetypes[state.god.archetype].name}.`, "era-change");
                 }
                 render();
                 return;
             }
 
             const config = EraConfig[state.era];
-            const action = config.actions.find(a => a.id === actionType);
+            if (config) {
+                const action = config.actions.find(a => a.id === actionType);
+                if (action && state.god.power >= action.cost) {
+                    state.god.power -= action.cost;
+                    state.god.evolution += action.cost * 1.5;
 
-            if (action && state.god.power >= action.cost) {
-                state.god.power -= action.cost;
-                state.god.evolution += action.cost * 1.5;
+                    // Apply Effects
+                    if (action.effects) {
+                        for (const [key, val] of Object.entries(action.effects)) {
+                            if (key === 'stats') {
+                                for (const [stat, delta] of Object.entries(val)) {
+                                    state.planet.stats[stat] += delta;
+                                }
+                            } else if (key === 'atmosphere') {
+                                state.planet.atmosphere = val;
+                            } else if (typeof state.planet[key] !== 'undefined') {
+                                state.planet[key] += val;
+                            } else if (typeof state.god[key] !== 'undefined') {
+                                state.god[key] += val;
+                            }
+                        }
+                    }
 
-                if (action.domainPoints) {
-                    for (const [d, p] of Object.entries(action.domainPoints)) state.god.domainPoints[d] += p;
+                    // Apply Domain Points
+                    if (action.domainPoints) {
+                        for (const [domain, pts] of Object.entries(action.domainPoints)) {
+                            state.god.domainPoints[domain] += pts;
+                        }
+                    }
+
+                    // Trigger Visuals
+                    if (action.visualType === 'GEOLOGY') PlanetRenderer.addFeature('MOUNTAIN', 25);
+                    if (action.visualType === 'IMPACT') { PlanetRenderer.addFeature('CRATER', 40); triggerImpact(); }
+                    if (action.visualType === 'VOLCANIC') PlanetRenderer.addFeature('MOUNTAIN', 15);
+
+                    logEvent(`Usas ${action.name}.`, "action");
+                    render();
+                    PlanetRenderer.draw();
                 }
-                if (action.effects) {
-                    const e = action.effects;
-                    if (e.atmosphere) state.planet.atmosphere = e.atmosphere;
-                    if (e.hostility) state.planet.hostility += e.hostility;
-                    if (e.population) state.planet.population += e.population;
-                    if (e.hydration) state.planet.stats.hydration += e.hydration;
-                    if (e.stats && e.stats.temperature) state.planet.stats.temperature += e.stats.temperature; // Corrected access
-                    if (e.power) state.god.power += e.power; // Corrected from powerGain
-                }
-                logEvent(`You use ${action.name}.`, "action");
-                triggerImpact();
-                render();
             }
         }
 
@@ -816,37 +851,124 @@
         }
 
         function triggerImpact() {
-            const main = document.getElementById('game-main'); // Changed from 'main-view' to 'game-main'
+            const main = document.getElementById('game-main');
             main.classList.add('impact-active');
             setTimeout(() => main.classList.remove('impact-active'), 500);
         }
+
+        // --- Planet Renderer ---
+        const PlanetRenderer = {
+            ctx: null,
+            init() {
+                const canvas = document.getElementById('planet-canvas');
+                this.ctx = canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            },
+            resize() {
+                const canvas = document.getElementById('planet-canvas');
+                const box = canvas.parentElement.getBoundingClientRect();
+                canvas.width = box.width;
+                canvas.height = box.height;
+                this.draw();
+            },
+            draw() {
+                if (!this.ctx) return;
+                const { ctx } = this;
+                const w = ctx.canvas.width;
+                const h = ctx.canvas.height;
+                const r = w / 2;
+
+                ctx.clearRect(0, 0, w, h);
+
+                // 1. Surface Base
+                const s = state.planet.stats;
+                const surface = s.hydration > 25 ? (state.planet.population > 500 ? '#166534' : '#1e40af') : '#4c1d95';
+
+                ctx.beginPath();
+                ctx.arc(r, r, r, 0, Math.PI * 2);
+                ctx.fillStyle = surface;
+                ctx.fill();
+
+                // 2. Features
+                state.visuals.features.forEach(f => {
+                    ctx.save();
+                    ctx.translate(r + f.x, r + f.y);
+                    if (f.type === 'MOUNTAIN') {
+                        ctx.fillStyle = `rgba(148, 163, 184, ${f.opacity || 0.8})`;
+                        ctx.beginPath();
+                        ctx.moveTo(0, -f.size);
+                        ctx.lineTo(-f.size * 0.8, f.size * 0.5);
+                        ctx.lineTo(f.size * 0.8, f.size * 0.5);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                        ctx.beginPath();
+                        ctx.moveTo(0, -f.size);
+                        ctx.lineTo(f.size * 0.8, f.size * 0.5);
+                        ctx.lineTo(0, f.size * 0.5);
+                        ctx.fill();
+                    } else if (f.type === 'CRATER') {
+                        ctx.strokeStyle = `rgba(0, 0, 0, 0.3)`;
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, f.size, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                });
+
+                // 3. Shading
+                const shadowGrad = ctx.createRadialGradient(r * 0.7, r * 0.7, r * 0.2, r, r, r);
+                shadowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+                shadowGrad.addColorStop(0.5, 'transparent');
+                shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.8)');
+
+                ctx.beginPath();
+                ctx.arc(r, r, r, 0, Math.PI * 2);
+                ctx.fillStyle = shadowGrad;
+                ctx.fill();
+            },
+            addFeature(type, size = 20) {
+                if (!this.ctx) return;
+                const r = this.ctx.canvas.width / 2;
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * (r * 0.8);
+                state.visuals.features.push({
+                    type,
+                    x: Math.cos(angle) * dist,
+                    y: Math.sin(angle) * dist,
+                    size: size + Math.random() * 10,
+                    opacity: 0.6 + Math.random() * 0.4
+                });
+                this.draw();
+            }
+        };
 
         function logEvent(text, type) {
             state.events.unshift({ text, type });
             if (state.events.length > 8) state.events.pop();
         }
 
-        // --- Tooltip Logic ---
+        // --- Tooltip ---
         function showTooltip(e, id) {
             const eraData = EraConfig[state.era];
-            const action = eraData.actions.find(a => a.id === id) || (id === 'ADVANCE_ERA' ? { name: "Ascension", lore: "Ascend to the next stage of divinity.", tip: "Requires maximum Entropy.", effects: {} } : null);
+            const action = eraData.actions.find(a => a.id === id) || (id === 'ADVANCE_ERA' ? { name: "Ascensión", lore: "Asciende a la siguiente etapa de la divinidad.", tip: "Requiere evolución máxima.", effects: {} } : null);
             if (!action) return;
 
-            let effectsHtml = '';
+            let effectsHtml = '<div class="tooltip-effects">';
             if (action.effects) {
-                effectsHtml = '<div class="tooltip-effects">';
                 for (const [key, val] of Object.entries(action.effects)) {
                     if (key === 'stats' && val.temperature) {
-                        effectsHtml += `<div class="effect-item ${val.temperature < 0 ? '' : 'negative'}"><span>Temperature:</span> <span>${val.temperature > 0 ? '+' : ''}${val.temperature}°C</span></div>`;
+                        effectsHtml += `<div class="effect-item ${val.temperature < 0 ? '' : 'negative'}"><span>Temperatura:</span> <span>${val.temperature > 0 ? '+' : ''}${val.temperature}°C</span></div>`;
                     } else if (typeof val === 'number') {
-                        const label = key.charAt(0).toUpperCase() + key.slice(1);
-                        effectsHtml += `<div class="effect-item ${val > 0 ? '' : 'negative'}"><span>${label}:</span> <span>${val > 0 ? '+' : ''}${val}${key === 'hydration' || key === 'hostility' ? '%' : ''}</span></div>`;
-                    } else if (typeof val === 'string') {
-                        effectsHtml += `<div class="effect-item"><span>${key.charAt(0).toUpperCase() + key.slice(1)}:</span> <span>${val}</span></div>`;
+                        effectsHtml += `<div class="effect-item ${val > 0 ? '' : 'negative'}"><span>${key.charAt(0).toUpperCase() + key.slice(1)}:</span> <span>${val > 0 ? '+' : ''}${val}</span></div>`;
                     }
                 }
-                effectsHtml += '</div>';
             }
+            effectsHtml += '</div>';
 
             const tooltip = document.getElementById('global-tooltip');
             tooltip.innerHTML = `
@@ -856,56 +978,35 @@
                 <div class="tooltip-divider"></div>
                 <div class="tooltip-tip">${action.tip}</div>
             `;
-
             const rect = e.currentTarget.getBoundingClientRect();
             tooltip.style.left = `${rect.left - 290}px`;
             tooltip.style.top = `${rect.top}px`;
             tooltip.classList.add('visible');
         }
 
-        function hideTooltip() {
-            document.getElementById('global-tooltip').classList.remove('visible');
-        }
+        function hideTooltip() { document.getElementById('global-tooltip').classList.remove('visible'); }
 
-
-        // --- Rendering ---
         function render() {
             const eraData = EraConfig[state.era];
-
-            // Header & Stats
-            document.getElementById('era-badge').textContent = eraData.name; // Changed from 'era-name' to 'era-badge'
-            document.getElementById('label-evolution').textContent = eraData.statLabel; // Changed from 'evolution-label' to 'label-evolution'
+            document.getElementById('era-badge').textContent = eraData.name;
+            document.getElementById('label-evolution').textContent = eraData.statLabel;
             document.getElementById('era-desc').textContent = eraData.description;
             document.getElementById('stat-power').textContent = Math.floor(state.god.power);
             document.getElementById('stat-evolution').textContent = `${Math.floor(state.god.evolution)} / ${eraData.nextEraThreshold === Infinity ? '∞' : eraData.nextEraThreshold}`;
-            document.getElementById('stat-hostility').textContent = Math.floor(state.planet.hostility) + "% Hostile";
-
-            // Planet State
+            document.getElementById('stat-hostility').textContent = Math.floor(state.planet.hostility) + "%";
             document.getElementById('stat-pop').textContent = Math.floor(state.planet.population).toLocaleString();
             document.getElementById('stat-temp').textContent = state.planet.stats.temperature + "°C";
             document.getElementById('stat-hyd').textContent = state.planet.stats.hydration + "%";
 
-            // Dashboard
-            document.getElementById('god-archetype').textContent = state.god.archetype ? Archetypes[state.god.archetype].name : 'Ascending Essence';
+            document.getElementById('god-archetype').textContent = state.god.archetype ? Archetypes[state.god.archetype].name : 'Esencia Ascendente';
             const dtrackers = document.getElementById('domain-trackers');
             dtrackers.innerHTML = '';
             ['ORDER', 'CHAOS', 'LIFE', 'WRATH'].forEach(d => {
                 const pts = state.god.domainPoints[d];
                 const pct = Math.min(100, (pts / 30) * 100);
                 const color = `var(--clr-${d.toLowerCase()})`;
-                dtrackers.innerHTML += `
-                    <div class="domain-track">
-                        <div class="domain-header"><span>${d}</span><span>${pts}</span></div>
-                        <div class="progress-bg"><div class="progress-fill" style="width: ${pct}%; background-color: ${color}; box-shadow: 0 0 10px ${color}44"></div></div>
-                    </div>`;
+                dtrackers.innerHTML += `<div class="domain-track"><div class="domain-header"><span>${d}</span><span>${pts}</span></div><div class="progress-bg"><div class="progress-fill" style="width: ${pct}%; background-color: ${color}"></div></div></div>`;
             });
-
-            // Visual Layers
-            const s = state.planet.stats;
-            const surface = s.hydration > 25 ? (state.planet.population > 500 ? '#166534' : '#1e40af') : '#4c1d95';
-            document.getElementById('planet-view').style.background = `radial-gradient(circle at 30% 30%, ${surface}, #020617)`;
-            document.getElementById('hostility-overlay').style.opacity = state.planet.hostility / 150;
-            document.getElementById('civ-lights').style.opacity = state.planet.population > 1000 ? 0.8 : 0;
 
             // Atmosphere
             const atmoGlow = document.getElementById('atmosphere-glow');
@@ -914,20 +1015,16 @@
             } else if (state.planet.stats.temperature > 150) {
                 atmoGlow.style.boxShadow = 'inset 0 0 50px rgba(248, 113, 113, 0.3), 0 0 30px rgba(248, 113, 113, 0.2)';
             } else {
-                atmoGlow.style.boxShadow = 'none'; // Clear if neither condition met
+                atmoGlow.style.boxShadow = 'none';
             }
 
-            // Advance Era Button
             const advContainer = document.getElementById('era-advance-container');
             if (state.god.evolution >= eraData.nextEraThreshold) {
                 if (!advContainer.innerHTML) {
-                    advContainer.innerHTML = `<button class="advance-era-btn" onclick="processAction('ADVANCE_ERA')">Ascend to ${state.era === Eras.PRIMORDIAL ? 'Era of Life' : 'Era of Awakening'}</button>`;
+                    advContainer.innerHTML = `<button class="advance-era-btn" onclick="processAction('ADVANCE_ERA')">Ascender a ${state.era === Eras.PRIMORDIAL ? 'Era de la Vida' : 'Era de la Civilización'}</button>`;
                 }
-            } else {
-                advContainer.innerHTML = '';
-            }
+            } else { advContainer.innerHTML = ''; }
 
-            // Actions Grid - ONLY rebuild if era changes or list is empty
             const grid = document.getElementById('actions-grid');
             if (grid.dataset.era !== state.era) {
                 grid.innerHTML = '';
@@ -949,14 +1046,13 @@
                 const btn = document.getElementById(`btn-${a.id}`);
                 if (btn) btn.disabled = state.god.power < a.cost;
             });
-
-            // Event Log
             document.getElementById('event-log').innerHTML = state.events.map(e => `
                 <div class="event-item ${e.type}">${e.text}</div>
             `).join('');
         }
 
-        // --- Init ---
+        // Initial render and setup
+        PlanetRenderer.init();
         setInterval(tick, 1000);
         render();
     </script>
