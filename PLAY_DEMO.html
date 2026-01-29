@@ -60,7 +60,7 @@
                 "header header"
                 "main sidebar";
             grid-template-rows: auto 1fr;
-            grid-template-columns: 1fr 340px;
+            grid-template-columns: 1fr 280px;
             min-height: 100vh;
             padding: 1.5rem;
             max-width: 1600px;
@@ -432,28 +432,26 @@
 
         .tooltip-content {
             position: absolute;
-            bottom: 110%;
-            /* Closer to avoid gaps */
-            right: 0;
+            right: 105%;
+            top: 0;
             width: 260px;
             background: rgba(2, 6, 23, 0.98);
             border: 1px solid var(--clr-gold);
             border-radius: 8px;
             padding: 1.2rem;
-            z-index: 99999;
-            /* Even higher */
+            z-index: 2147483647;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
             transition: opacity 0.2s ease, transform 0.2s ease;
-            transform: translateY(5px);
+            transform: translateX(10px);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
         }
 
         .tooltip-wrapper:hover .tooltip-content {
             visibility: visible;
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(0);
         }
 
         .tooltip-title {
