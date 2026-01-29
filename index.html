@@ -387,6 +387,7 @@
         .action-btn {
             padding: 1.2rem;
             width: 100%;
+            max-width: 240px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             background: rgba(255, 255, 255, 0.03);
             border-radius: 8px;
@@ -430,9 +431,10 @@
 
         .tooltip-content {
             position: absolute;
-            right: 105%;
-            top: 0;
-            width: 260px;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            width: 240px;
             background: rgba(2, 6, 23, 0.98);
             border: 1px solid var(--clr-gold);
             border-radius: 8px;
@@ -441,15 +443,14 @@
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            transform: translateX(10px);
+            transition: all 0.3s ease;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
         }
 
         .tooltip-wrapper:hover .tooltip-content {
             visibility: visible;
             opacity: 1;
-            transform: translateX(0);
+            transform: translateX(-50%) translateY(0);
         }
 
         .tooltip-title {
@@ -862,27 +863,34 @@
                 advContainer.innerHTML = '';
             }
 
-            // Actions Grid
+            // Actions Grid - ONLY rebuild if era changes or list is empty
             const grid = document.getElementById('actions-grid');
-            grid.innerHTML = '';
-            eraData.actions.forEach(a => {
-                const wrap = document.createElement('div');
-                wrap.className = 'tooltip-wrapper';
-                const canAfford = state.god.power >= a.cost;
+            if (grid.dataset.era !== state.era) {
+                grid.innerHTML = '';
+                grid.dataset.era = state.era;
+                eraData.actions.forEach(a => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'tooltip-wrapper';
+                    wrap.dataset.actionId = a.id;
+                    wrap.innerHTML = `
+                        <button class="action-btn" id="btn-${a.id}" onclick="processAction('${a.id}')">
+                            <strong>${a.name}</strong>
+                            <small>${a.cost} Power</small>
+                        </button>
+                        <div class="tooltip-content">
+                            <div class="tooltip-title">${a.name}</div>
+                            <div class="tooltip-lore">"${a.lore}"</div>
+                            <div class="tooltip-divider"></div>
+                            <div class="tooltip-tip">${a.tip}</div>
+                        </div>`;
+                    grid.appendChild(wrap);
+                });
+            }
 
-                wrap.innerHTML = `
-                    <button class="action-btn" ${canAfford ? '' : 'disabled'} onclick="processAction('${a.id}')">
-                        <strong>${a.name}</strong>
-                        <small>${a.cost} Power</small>
-                    </button>
-                    <div class="tooltip-content">
-                        <div class="tooltip-title">${a.name}</div>
-                        <div class="tooltip-lore">"${a.lore}"</div>
-                        <div class="tooltip-divider"></div>
-                        <div class="tooltip-tip">${a.tip}</div>
-                    </div>
-                `;
-                grid.appendChild(wrap);
+            // Always update disabled state and costs independently to avoid flickering
+            eraData.actions.forEach(a => {
+                const btn = document.getElementById(`btn-${a.id}`);
+                if (btn) btn.disabled = state.god.power < a.cost;
             });
 
             // Event Log
