@@ -418,20 +418,20 @@
 
         .tooltip-content {
             position: absolute;
-            bottom: 115%;
+            bottom: 120%;
             right: 0;
             width: 260px;
             background: rgba(2, 6, 23, 0.98);
             border: 1px solid var(--clr-gold);
             border-radius: 8px;
             padding: 1.2rem;
-            z-index: 1000;
+            z-index: 9999;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
             transform: translateY(10px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
         }
 
         .tooltip-wrapper:hover .tooltip-content {
