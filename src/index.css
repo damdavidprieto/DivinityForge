@@ -1,24 +1,54 @@
 :root {
-    --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-    --bg-color: #0F172A;
-    --text-color: #E2E8F0;
-    --primary: #8B5CF6;
-    --secondary: #64748B;
-    --accent-wrath: #EF4444;
-    --accent-benevolence: #10B981;
+    /* Color Palette - Divine / Celestial */
+    --clr-gold: #d4af37;
+    --clr-white: #f8fafc;
+    --clr-deep: #020617;
+    --clr-glow: #38bdf8;
+
+    /* Domains */
+    --clr-order: #60a5fa;
+    --clr-chaos: #f472b6;
+    --clr-life: #4ade80;
+    --clr-wrath: #f87171;
+    --clr-knowledge: #fbbf24;
+
+    /* Theme-specific tokens */
+    --bg-main: #020617;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.1);
+
+    --font-heading: 'Cinzel', serif;
+    --font-ui: 'Inter', system-ui, sans-serif;
 }
 
 body {
     margin: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: var(--font-family);
+    background-color: var(--bg-main);
+    background-image:
+        radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.05), transparent),
+        radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.05), transparent);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
 * {
     box-sizing: border-box;
 }
 
+h1,
+h2,
+h3 {
+    font-family: var(--font-heading);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
 button {
+    font-family: var(--font-ui);
     cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
